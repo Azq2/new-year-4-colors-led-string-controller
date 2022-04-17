@@ -5,7 +5,8 @@ CFILES += src/hw.c
 CFILES += src/main.c
 CFILES += src/utils.c
 CFILES += src/swtimer.c
-CFILES += src/color.c
+CFILES += src/leds.c
+CFILES += src/effects.c
 
 #LDLIBS += -lm
 

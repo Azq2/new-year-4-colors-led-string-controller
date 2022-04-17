@@ -52,7 +52,7 @@ void pwm_set_value(uint32_t tim, uint32_t oc, uint32_t v) {
 void pwm_oc_setup(uint32_t tim, uint32_t oc) {
 	timer_set_oc_mode(tim, oc, TIM_OCM_PWM1);
 	timer_enable_oc_preload(tim, oc);
-	timer_set_oc_polarity_high(tim, oc);
+	timer_set_oc_polarity_low(tim, oc);
 	timer_enable_oc_output(tim, oc);
 	
 	timer_set_oc_value(tim, oc, 0);
@@ -68,7 +68,6 @@ void pwm_setup(void) {
 	timer_enable_break_main_output(TIM1);
 	
 	pwm_oc_setup(TIM1, TIM_OC2);
-	pwm_oc_setup(TIM1, TIM_OC3);
 	
 	timer_enable_preload(TIM1);
 	timer_enable_counter(TIM1);
@@ -95,11 +94,10 @@ void main_hw_setup(void) {
 	rcc_periph_clock_enable(RCC_TIM3);
 	
 	// PWM
-	gpio_mode_setup(GPIOA, GPIO_MODE_AF, GPIO_PUPD_NONE, GPIO6 | GPIO7 | GPIO9 | GPIO10);
+	gpio_mode_setup(GPIOA, GPIO_MODE_AF, GPIO_PUPD_NONE, GPIO6 | GPIO7 | GPIO9);
 	gpio_set_af(GPIOA, GPIO_AF1, GPIO6);
 	gpio_set_af(GPIOA, GPIO_AF1, GPIO7);
 	gpio_set_af(GPIOA, GPIO_AF2, GPIO9);
-	gpio_set_af(GPIOA, GPIO_AF2, GPIO10);
 	
 	pwm_setup();
 	
@@ -111,7 +109,7 @@ void main_hw_setup(void) {
 	systick_interrupt_enable();
 	
 	// key
-	gpio_mode_setup(GPIOA, GPIO_MODE_INPUT, GPIO_PUPD_PULLUP, GPIO4);
+	gpio_mode_setup(GPIOA, GPIO_MODE_INPUT, GPIO_PUPD_PULLUP, GPIO5);
 }
 
 void debug_setup(void) {

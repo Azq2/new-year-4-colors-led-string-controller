@@ -34,6 +34,7 @@
 BUILD_DIR ?= bin
 OPT ?= -Os
 CSTD ?= -std=c11
+CXXSTD ?= -std=c++17
 
 # Be silent per default, but 'make V=1' will show all compiler calls.
 # If you're insane, V=99 will print out all sorts of things.
@@ -46,6 +47,7 @@ endif
 # Tool paths.
 PREFIX	?= arm-none-eabi-
 GDB	= $(PREFIX)gdb
+#GDB = gdb-multiarch
 CC	= $(PREFIX)gcc
 CXX	= $(PREFIX)g++
 LD	= $(PREFIX)gcc
@@ -59,11 +61,12 @@ OPENCM3_INC = $(OPENCM3_DIR)/include
 INCLUDES += $(patsubst %,-I%, . $(OPENCM3_INC) )
 
 OBJS = $(CFILES:%.c=$(BUILD_DIR)/%.o)
-OBJS += $(CXXFILES:%.cxx=$(BUILD_DIR)/%.o)
+OBJS += $(CXXFILES:%.cpp=$(BUILD_DIR)/%.o)
 OBJS += $(AFILES:%.S=$(BUILD_DIR)/%.o)
-GENERATED_BINS = $(PROJECT).elf $(PROJECT).bin $(PROJECT).map $(PROJECT).list $(PROJECT).lss
+GENERATED_BINS = $(PROJECT).elf $(PROJECT).bin $(PROJECT).old.elf $(PROJECT).map $(PROJECT).list $(PROJECT).lss
 
 TGT_CPPFLAGS += -MD
+#TGT_CPPFLAGS += -flto
 TGT_CPPFLAGS += -Wall -Wundef $(INCLUDES)
 TGT_CPPFLAGS += $(INCLUDES) $(OPENCM3_DEFS)
 
@@ -74,11 +77,11 @@ TGT_CFLAGS += -ffunction-sections -fdata-sections
 TGT_CFLAGS += -Wextra -Wshadow -Wno-unused-variable -Wimplicit-function-declaration
 TGT_CFLAGS += -Wredundant-decls -Wstrict-prototypes -Wmissing-prototypes
 
-TGT_CXXFLAGS += $(OPT) $(CXXSTD) -ggdb3
+TGT_CXXFLAGS += $(OPT) $(CXXSTD) -ggdb3 -fno-exceptions -fno-use-cxa-atexit -fno-rtti
 TGT_CXXFLAGS += $(ARCH_FLAGS)
 TGT_CXXFLAGS += -fno-common
 TGT_CXXFLAGS += -ffunction-sections -fdata-sections
-TGT_CXXFLAGS += -Wextra -Wshadow -Wredundant-decls  -Weffc++
+TGT_CXXFLAGS += -Wextra -Wshadow -Wredundant-decls -Weffc++
 
 TGT_ASFLAGS += $(OPT) $(ARCH_FLAGS) -ggdb3
 
@@ -98,13 +101,13 @@ ifeq (,$(DEVICE))
 LDLIBS += -l$(OPENCM3_LIB)
 endif
 # nosys is only in newer gcc-arm-embedded...
-LDLIBS += -specs=nosys.specs
-#LDLIBS += -Wl,--start-group -lc -lgcc -lnosys -Wl,--end-group
+#LDLIBS += -specs=nosys.specs
+LDLIBS += -Wl,--start-group -lc_nano -lgcc -lnosys -Wl,--end-group
 #LDLIBS += -Wl,--start-group -nostdlib -lgcc -lnosys -Wl,--end-group
 
 # Burn in legacy hell fortran modula pascal yacc idontevenwat
 .SUFFIXES:
-.SUFFIXES: .c .S .h .o .cxx .elf .bin .list .lss
+.SUFFIXES: .c .S .h .o .cxx .cpp .elf .bin .list .lss
 
 # Bad make, never *ever* try to get a file out of source control by yourself.
 %: %,v
@@ -133,7 +136,7 @@ $(BUILD_DIR)/%.o: %.c
 	@mkdir -p $(dir $@)
 	$(Q)$(CC) $(TGT_CFLAGS) $(CFLAGS) $(TGT_CPPFLAGS) $(CPPFLAGS) -o $@ -c $<
 
-$(BUILD_DIR)/%.o: %.cxx
+$(BUILD_DIR)/%.o: %.cpp
 	@printf "  CXX\t$<\n"
 	@mkdir -p $(dir $@)
 	$(Q)$(CXX) $(TGT_CXXFLAGS) $(CXXFLAGS) $(TGT_CPPFLAGS) $(CPPFLAGS) -o $@ -c $<

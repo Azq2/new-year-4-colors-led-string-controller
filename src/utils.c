@@ -42,6 +42,8 @@ void uart_simple_setup(uint32_t usart, uint32_t baudrate, bool use_for_printf) {
 		uart_for_prinf = USART1;
 }
 
+/*
+__attribute__((used))
 int _write(int file, char *ptr, int len) {
 	int i;
 	if (uart_for_prinf > -1 && (file == STDOUT_FILENO || file == STDERR_FILENO)) {
@@ -53,7 +55,6 @@ int _write(int file, char *ptr, int len) {
 	return -1;
 }
 
-/*
 int puts(const char *s) {
 	int c = 0;
 	while (s[c]) {
